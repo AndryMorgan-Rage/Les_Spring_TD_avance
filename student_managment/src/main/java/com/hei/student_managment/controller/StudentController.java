@@ -1,6 +1,8 @@
 package com.hei.student_managment.controller;
 
 import com.hei.student_managment.model.Student;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,30 +19,46 @@ public class StudentController {
 
 
     @GetMapping("/welcome")
-public String welcome(@RequestParam String name){
-    return "welcome"+" "+name;
+    public ResponseEntity<String> welcome(@RequestParam(name = "name", required = false) String name) {
+        if (name == null || name.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(null);
+        }
+        return ResponseEntity.ok("Welcome " + name);
     }
 
     @PostMapping("/students")
-public String addStudent(@RequestBody List<Student> students){
-        studentList.addAll(students);
-        String nom = "";
-        for (Student s:students){
-            nom = nom + s.getFirstName()+" ";
+    public ResponseEntity<List<Student>> addStudents(@RequestBody List<Student> students) {
+        try {
+            studentList.addAll(students);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(studentList);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build();
         }
-        return nom;
     }
 
     @GetMapping("/students")
-    public String getStudents(@RequestHeader("Accept") String acceptHeader) {
-        if ("text/plain".equals(acceptHeader)) {
-            String students = "";
-            for (Student s:studentList){
-                students = students + s.getFirstName()+" ";
+    public ResponseEntity<Object> getStudents(@RequestHeader(value = "Accept", required = false) String acceptHeader) {
+        try {
+            if (acceptHeader == null) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .build();
             }
-            return students;
-        }else {
-            return "format non supported";
+            if (!"text/plain".equals(acceptHeader) && !"application/json".equals(acceptHeader)) {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_IMPLEMENTED)
+                        .build();
+            }
+            return ResponseEntity.ok(studentList);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
