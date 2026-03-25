@@ -21,7 +21,6 @@ public class StudentController {
     private final StudentService studentService;
     private final StudentValidator studentValidator;
 
-    // Injection par constructeur
     public StudentController(StudentService studentService, StudentValidator studentValidator) {
         this.studentService = studentService;
         this.studentValidator = studentValidator;
@@ -30,7 +29,6 @@ public class StudentController {
     @PostMapping("/students")
     public ResponseEntity<List<Student>> addStudents(@RequestBody List<Student> students) {
         try {
-            // 1. On valide chaque étudiant via le Validator
             for (Student s : students) {
                 studentValidator.validate(s);
             }
